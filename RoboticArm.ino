@@ -118,13 +118,15 @@ void loop() {
       imu.dmpGetQuaternion(&q, FIFOBuffer);
       imu.dmpGetGravity(&gravity, &q);
       imu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-      yaw = ypr[0] * 180/M_PI;
-      pitch = ypr[1] * 180/M_PI;
+      yaw = yrp[0] * 180/M_PI;
+      roll = yrp[1] * 180/M_PI;
+      pitch = yrp[2] * 180/M_PI;
       Serial.print("ypr\t");
       Serial.print(yaw);
       Serial.print("°\t");
       Serial.print(pitch);
-      Serial.println("°");
+      Serial.print("°\t");
+      Serial.println(roll);
 
       if(abs(yaw-current_yaw) > 5)
       {
@@ -138,8 +140,8 @@ void loop() {
       if(abs(pitch-current_pitch) > 5)
       {
         current_pitch = pitch;
-        long val = constrain(pitch, -90, 45);
-        val = map(val, -90, 45, 0, 180);
+        long val = constrain(pitch, -45, 45);
+        val = map(val, -45, 45, 0, 180);
         Serial.print("Mapped pitch: ");
         Serial.println(val);
         servo_vertical_move.write(val);
