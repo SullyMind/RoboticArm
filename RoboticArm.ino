@@ -23,8 +23,8 @@ Servo servo_grip;
 // Orientation/Motion Variables
 Quaternion q;
 VectorFloat gravity;
-float yrp[3];      // [yaw, roll, pitch]
-float yaw, pitch;
+float ypr[3];      // [yaw, pitch, roll]
+float yaw, pitch, roll;
 
 typedef struct
 {
@@ -141,15 +141,15 @@ void loop() {
   if (imu_hand.dmpGetCurrentFIFOPacket(imu_hand_data.FIFOBuffer)) { // Get the Latest packet 
       imu_hand.dmpGetQuaternion(&q, imu_hand_data.FIFOBuffer);
       imu_hand.dmpGetGravity(&gravity, &q);
-      imu_hand.dmpGetYawPitchRoll(yrp, &q, &gravity);
-      yaw = yrp[0] * 180/M_PI;
-      //roll = yrp[1] * 180/M_PI;
-      pitch = yrp[2] * 180/M_PI;
+      imu_hand.dmpGetYawPitchRoll(ypr, &q, &gravity);
+      yaw = ypr[0] * 180/M_PI;
+      pitch = ypr[1] * 180/M_PI;
+      roll = ypr[2] * 180/M_PI;
       /*Serial.print("ypr\t");
       Serial.print(yaw);
       Serial.print("°\t");
-      Serial.println(pitch);*/
-      /*Serial.print("°\t");
+      Serial.print(pitch);
+      Serial.print("°\t");
       Serial.println(roll);*/
 
       if(abs(imu_hand_data.yaw-yaw) > 5)
@@ -162,23 +162,33 @@ void loop() {
       if(abs(imu_hand_data.pitch-pitch) > 5)
       {
         imu_hand_data.pitch = pitch;
-        long val = constrain(pitch, -45, 45);
-        val = map(val, -45, 45, 0, 180);
-        servo_vertical_move.write(val);
+        long val = constrain(pitch, -90, 45);
+        val = map(val, -90, 45, 0, 180);
         servo_horizontal_move.write(val);
       }
   }
   if (imu_arm.dmpGetCurrentFIFOPacket(imu_arm_data.FIFOBuffer)) {
     imu_arm.dmpGetQuaternion(&q, imu_arm_data.FIFOBuffer);
     imu_arm.dmpGetGravity(&gravity, &q);
-    imu_arm.dmpGetYawPitchRoll(yrp, &q, &gravity);
-    yaw = yrp[0] * 180/M_PI;
-    pitch = yrp[2] * 180/M_PI;
+    imu_arm.dmpGetYawPitchRoll(ypr, &q, &gravity);
+    yaw = ypr[0] * 180/M_PI;
+    pitch = ypr[1] * 180/M_PI;
+    roll = ypr[2] * 180/M_PI;
 
-    Serial.print("ypr\t");
+    /*Serial.print("ypr\t");
     Serial.print(yaw);
     Serial.print("°\t");
-    Serial.println(pitch);
+    Serial.print(pitch);
+    Serial.print("°\t");
+    Serial.println(roll);*/
+
+    if(abs(imu_arm_data.pitch-pitch) > 5)
+    {
+      imu_arm_data.pitch = pitch;
+      long val = constrain(pitch, -90, 0);
+      val = map(val, 0, -90, 0, 180);
+      servo_vertical_move.write(val);
+    }
   }
   delay(100);
 }
