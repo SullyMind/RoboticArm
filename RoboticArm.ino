@@ -33,7 +33,7 @@ typedef struct
   uint8_t devStatus;
   uint16_t packetSize;
   uint8_t FIFOBuffer[64]; 
-  float yaw, pitch;
+  float yaw, pitch, roll;
 } imu_data;
 
 /* -------------- IMU HAND ----------------- */
@@ -145,6 +145,7 @@ void loop() {
       yaw = ypr[0] * 180/M_PI;
       pitch = ypr[1] * 180/M_PI;
       roll = ypr[2] * 180/M_PI;
+      
       /*Serial.print("ypr\t");
       Serial.print(yaw);
       Serial.print("°\t");
@@ -159,11 +160,17 @@ void loop() {
         val = map(val, -90, 45, 0, 180);
         servo_rotation.write(val);
       }
-      if(abs(imu_hand_data.pitch-pitch) > 5)
+      if(abs(imu_hand_data.roll-roll) > 5)
       {
-        imu_hand_data.pitch = pitch;
-        long val = constrain(pitch, -90, 45);
-        val = map(val, -90, 45, 0, 180);
+        imu_hand_data.roll = roll;
+        long val = constrain(roll, -45, 45);
+        // Adaptive ranges depending on another servomotor  
+        if (imu_arm_data.roll < 30)
+          val = map(val, -45, 45, 20, 100);
+        else if (imu_arm_data.roll > 65)
+          val = map(val, -45, 45, 10, 70);
+        else
+          val = map(val, -45, 45, 0, 120);
         servo_horizontal_move.write(val);
       }
   }
@@ -175,18 +182,18 @@ void loop() {
     pitch = ypr[1] * 180/M_PI;
     roll = ypr[2] * 180/M_PI;
 
-    /*Serial.print("ypr\t");
+    Serial.print("ypr\t");
     Serial.print(yaw);
     Serial.print("°\t");
     Serial.print(pitch);
     Serial.print("°\t");
-    Serial.println(roll);*/
+    Serial.println(roll);
 
-    if(abs(imu_arm_data.pitch-pitch) > 5)
+    if(abs(imu_arm_data.roll-roll) > 5)
     {
-      imu_arm_data.pitch = pitch;
-      long val = constrain(pitch, -90, 0);
-      val = map(val, 0, -90, 0, 180);
+      imu_arm_data.roll = roll;
+      long val = constrain(roll, -90, 0);
+      val = map(val, 0, -90, 10, 80);
       servo_vertical_move.write(val);
     }
   }
