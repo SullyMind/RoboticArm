@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <SPI.h>
 #include "mrf24j.h"
-#include "Glove/common.h"
+#include "common.h"
 
 /* -------------------------------------------
    |          MRF24J RF Module               |  

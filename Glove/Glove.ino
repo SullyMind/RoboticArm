@@ -4,7 +4,7 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 #include <SPI.h>
 #include "mrf24j.h"
-#include "common.h"
+#include "Robot/common.h"
 
 /* -------------------------------------------
    |         Flex Sensor variables           |  
@@ -183,6 +183,10 @@ void rf_send(id_t rf_id, byte val)
      |              Loop function              |
      -------------------------------------------
 */
+
+// Angle that need to be saved because horizontal angle is constrained by it (mechanical constraints of the robot)
+byte angle_vertical;
+
 void loop() {
   //scan for rx and tx
   mrf.check_flags(&rx_handler, &tx_handler); 
@@ -221,9 +225,9 @@ void loop() {
         imu_hand_data.roll = roll;
         long val = constrain(roll, -45, 45);
         // Adaptive ranges depending on another servomotor  
-        if (imu_arm_data.roll < 30)
+        if (angle_vertical < 30)
           angle = map(val, -45, 45, 20, 100);
-        else if (imu_arm_data.roll > 65)
+        else if (angle_vertical > 65)
           angle = map(val, -45, 45, 10, 70);
         else
           angle = map(val, -45, 45, 0, 120);
@@ -249,8 +253,8 @@ void loop() {
     {
       imu_arm_data.roll = roll;
       long val = constrain(roll, -90, 0);
-      angle = map(val, 0, -90, 10, 80);
-      rf_send(VERTICAL, angle);
+      angle_vertical = map(val, 0, -90, 10, 80);
+      rf_send(VERTICAL, angle_vertical);
     }
   }
   delay(10);
